@@ -15,6 +15,10 @@ public class StudentProcessor implements ItemProcessor<Student, StudentUpdate> {
 
     @Override
     public StudentUpdate process(Student student) throws Exception {
+        // Kiểm tra nếu ID của Student là null thì ném ra RuntimeException
+        if (student.getId() == null) {
+            throw new RuntimeException("Student ID is null, processing failed");
+        }
         // Lưu student vào bảng student trước
         studentRepository.save(student);
 
