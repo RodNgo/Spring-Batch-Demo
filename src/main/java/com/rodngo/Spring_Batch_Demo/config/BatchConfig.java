@@ -16,11 +16,13 @@ import org.springframework.batch.item.file.LineMapper;
 import org.springframework.batch.item.file.mapping.BeanWrapperFieldSetMapper;
 import org.springframework.batch.item.file.mapping.DefaultLineMapper;
 import org.springframework.batch.item.file.transform.DelimitedLineTokenizer;
+import org.springframework.batch.item.validator.ValidationException;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.task.SimpleAsyncTaskExecutor;
 import org.springframework.core.task.TaskExecutor;
+import org.springframework.dao.DeadlockLoserDataAccessException;
 import org.springframework.transaction.PlatformTransactionManager;
 
 import java.time.LocalDateTime;
@@ -44,7 +46,7 @@ public class BatchConfig {
         itemReader.setLineMapper(lineMapper());
         return itemReader;
     }
-    //Jobrepository sử dụng Jobbuilder và StepBuilder
+    //JobRepository sử dụng Jobbuilder và StepBuilder
     // JobRepository đã được sử dụng trong các StepBuilder và JobBuilder để quản lý quá trình chạy của Job và Step,
     // cho phép theo dõi trạng thái và phục hồi lại từ các lần chạy trước nếu xảy ra lỗi.
 
@@ -68,7 +70,15 @@ public class BatchConfig {
                 .reader(reader())
                 .processor(processor())
                 .writer(writer())
+                .faultTolerant()
+                .skipLimit(1)
+                .skip(Exception.class)
+//                .faultTolerant()
+                .noRollback(Exception.class)
                 .taskExecutor(taskExecutor())
+//                .startLimit(1)
+////                .allowStartIfComplete(false)
+
                 .build();
     }
     @Bean
